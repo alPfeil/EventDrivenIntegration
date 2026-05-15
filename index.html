@@ -1,9 +1,287 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filterable Table - GitHub Pages</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            color: #24292e;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+
+        h1 {
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input[type="text"], select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5da;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #fafbfc;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #0366d6;
+            box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        th {
+            background-color: #f6f8fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background-color: #e1e4e8;
+        }
+
+        tr:hover {
+            background-color: #f6f8fa;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #586069;
+            font-style: italic;
+        }
+
+        .sort-indicator {
+            margin-left: 5px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Hello GitHub Pages</h1>
+    <h1>Filterable Data Table</h1>
+    
+    <div class="filter-container">
+        <input type="text" id="searchInput" placeholder="Search all columns...">
+        <select id="categoryFilter">
+            <option value="">All Categories</option>
+            <option value="Technology">Technology</option>
+            <option value="Science">Science</option>
+            <option value="Business">Business</option>
+        </select>
+        <select id="statusFilter">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Pending">Pending</option>
+        </select>
+    </div>
+
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">Name <span class="sort-indicator"></span></th>
+                <th onclick="sortTable(1)">Category <span class="sort-indicator"></span></th>
+                <th onclick="sortTable(2)">Status <span class="sort-indicator"></span></th>
+                <th onclick="sortTable(3)">Date <span class="sort-indicator"></span></th>
+                <th onclick="sortTable(4)">Score <span class="sort-indicator"></span></th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr>
+                <td>Project Alpha</td>
+                <td>Technology</td>
+                <td>Active</td>
+                <td>2024-01-15</td>
+                <td>85</td>
+            </tr>
+            <tr>
+                <td>Research Beta</td>
+                <td>Science</td>
+                <td>Pending</td>
+                <td>2024-02-20</td>
+                <td>72</td>
+            </tr>
+            <tr>
+                <td>Business Gamma</td>
+                <td>Business</td>
+                <td>Active</td>
+                <td>2024-01-30</td>
+                <td>93</td>
+            </tr>
+            <tr>
+                <td>Tech Delta</td>
+                <td>Technology</td>
+                <td>Inactive</td>
+                <td>2024-03-05</td>
+                <td>67</td>
+            </tr>
+            <tr>
+                <td>Science Epsilon</td>
+                <td>Science</td>
+                <td>Active</td>
+                <td>2024-02-10</td>
+                <td>88</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        let sortDirection = {};
+
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const tableBody = document.getElementById('tableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let showRow = true;
+
+                // Text search across all columns
+                if (searchTerm) {
+                    let matchFound = false;
+                    for (let j = 0; j < cells.length; j++) {
+                        if (cells[j].textContent.toLowerCase().includes(searchTerm)) {
+                            matchFound = true;
+                            break;
+                        }
+                    }
+                    if (!matchFound) showRow = false;
+                }
+
+                // Category filter
+                if (categoryFilter && cells[1].textContent !== categoryFilter) {
+                    showRow = false;
+                }
+
+                // Status filter
+                if (statusFilter && cells[2].textContent !== statusFilter) {
+                    showRow = false;
+                }
+
+                row.style.display = showRow ? '' : 'none';
+                if (showRow) visibleCount++;
+            }
+
+            // Show "no results" message if needed
+            updateNoResultsMessage(visibleCount);
+        }
+
+        function updateNoResultsMessage(visibleCount) {
+            let noResultsRow = document.getElementById('noResultsRow');
+            
+            if (visibleCount === 0) {
+                if (!noResultsRow) {
+                    const tableBody = document.getElementById('tableBody');
+                    noResultsRow = document.createElement('tr');
+                    noResultsRow.id = 'noResultsRow';
+                    noResultsRow.innerHTML = '<td colspan="5" class="no-results">No results found</td>';
+                    tableBody.appendChild(noResultsRow);
+                }
+            } else {
+                if (noResultsRow) {
+                    noResultsRow.remove();
+                }
+            }
+        }
+
+        function sortTable(columnIndex) {
+            const table = document.getElementById('dataTable');
+            const tbody = table.getElementsByTagName('tbody')[0];
+            const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => row.id !== 'noResultsRow');
+            
+            // Toggle sort direction
+            sortDirection[columnIndex] = sortDirection[columnIndex] === 'asc' ? 'desc' : 'asc';
+            
+            // Update sort indicators
+            updateSortIndicators(columnIndex);
+            
+            rows.sort((a, b) => {
+                const aValue = a.getElementsByTagName('td')[columnIndex].textContent.trim();
+                const bValue = b.getElementsByTagName('td')[columnIndex].textContent.trim();
+                
+                // Try to parse as numbers for numeric columns
+                const aNum = parseFloat(aValue);
+                const bNum = parseFloat(bValue);
+                
+                let comparison;
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    comparison = aNum - bNum;
+                } else {
+                    comparison = aValue.localeCompare(bValue);
+                }
+                
+                return sortDirection[columnIndex] === 'asc' ? comparison : -comparison;
+            });
+
+            // Re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function updateSortIndicators(activeColumn) {
+            const indicators = document.querySelectorAll('.sort-indicator');
+            indicators.forEach((indicator, index) => {
+                if (index === activeColumn) {
+                    indicator.textContent = sortDirection[activeColumn] === 'asc' ? '↑' : '↓';
+                } else {
+                    indicator.textContent = '';
+                }
+            });
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('categoryFilter').addEventListener('change', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
+    </script>
 </body>
 </html>
